@@ -1,0 +1,24 @@
+{
+  "name": "ch-automation-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iCodeIeu/ch-automation-project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/iCodeIeu/ch-automation-project/issues"
+  },
+  "homepage": "https://github.com/iCodeIeu/ch-automation-project#readme",
+  "devDependencies": {
+    "@faker-js/faker": "^9.9.0",
+    "@playwright/test": "^1.53.2",
+    "@types/node": "^24.0.10"
+  }
+}
