@@ -1,6 +1,6 @@
 import { Page, expect, Locator } from '@playwright/test';
 import { expectVisibleAndEnabled, validateAndPerform, getDigits } from '../utils/shared-helpers';
-import { SelectedRoomDetails, RoomOptionInternalDetails } from '../utils/types';
+import { SelectedRoomDetails, RoomOptionInternalDetails, EnquiryDetails } from '../utils/types';
 import { faker } from '@faker-js/faker';
 
 export class HomePage {
@@ -17,6 +17,15 @@ export class HomePage {
   readonly roomCardTitle: Locator;
   readonly roomCardRate: Locator;
   readonly roomCardBookButton: Locator;
+  readonly nameInput: Locator;
+  readonly emailInput: Locator;
+  readonly phoneInput: Locator;
+  readonly subjectInput: Locator;
+  readonly messageInput: Locator;
+  readonly submitEnquiryButton: Locator;
+  readonly enquiryDetailsError: Locator;
+  readonly successfulEnquirySubmisionMessage: Locator;
+  readonly successfulEnquiruSubmissionSubject: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -38,6 +47,15 @@ export class HomePage {
     this.roomCardTitle = this.roomCard.getByRole('heading', { level: 5 });
     this.roomCardRate = this.roomCard.locator('//*[@class="fw-bold fs-5"]');
     this.roomCardBookButton = this.roomCard.locator('//*[@class="btn btn-primary"]');
+    this.nameInput = page.getByTestId('ContactName');
+    this.emailInput = page.getByTestId('ContactEmail');
+    this.phoneInput = page.getByTestId('ContactPhone');
+    this.subjectInput = page.getByTestId('ContactSubject');
+    this.messageInput = page.getByTestId('ContactDescription');
+    this.submitEnquiryButton = page.getByRole('button', { name: 'Submit' });
+    this.enquiryDetailsError = page.locator('//*[@class="alert alert-danger"]//p');
+    this.successfulEnquirySubmisionMessage = page.locator('//*[@class="h4 mb-4"]').nth(1);
+    this.successfulEnquiruSubmissionSubject = this.successfulEnquirySubmisionMessage.locator('xpath=./following-sibling::p[2]');
   }
 
   async goToHomePage() {
@@ -144,5 +162,15 @@ export class HomePage {
 
     await this.page.waitForLoadState('domcontentloaded');
     return { type: selectedRoom.type, price: selectedRoom.price };
+  }
+
+  async fillEnquiryDetailsAndSubmit(details: Partial<EnquiryDetails>): Promise<void> {
+    await this.nameInput.scrollIntoViewIfNeeded();
+    await validateAndPerform(this.nameInput).fill(details.name || '');
+    await validateAndPerform(this.emailInput).fill(details.email || '');
+    await validateAndPerform(this.phoneInput).fill(details.phone || '');
+    await validateAndPerform(this.subjectInput).fill(details.subject || '');
+    await validateAndPerform(this.messageInput).fill(details.message || '');
+    await validateAndPerform(this.submitEnquiryButton).click();
   }
 }
