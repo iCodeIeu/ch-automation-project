@@ -95,3 +95,80 @@ export function validateAndPerform(locator: Locator) {
     },
   };
 }
+
+/**
+ * Common function to get all visible error messages from the page.
+ * @param page The Playwright Page object.
+ * @param errorMessageSelector The CSS or XPath selector that identifies all validation error messages.
+ * @param timeout Max time in milliseconds to wait for error messages to appear.
+ * @returns A promise that resolves to an array of trimmed error messages.
+ */
+export async function getAllVisibleErrorMessages(page: Page, errorMessageSelector: Locator, timeout: number = 5000): Promise<string[]> {
+  // Wait for at least one error message to appear and be visible.
+  // This makes the helper more robust, as errors might take a moment to render.
+  try {
+    await errorMessageSelector.first().waitFor({ state: 'visible', timeout });
+  } catch (e) {
+    // If no errors are visible within timeout, return empty array rather than throwing
+    return [];
+  }
+
+  const actualErrorMessages: string[] = await errorMessageSelector.allTextContents();
+
+  // Clean up actual messages: trim whitespace, remove empty strings
+  return actualErrorMessages.map(msg => msg.trim()).filter(msg => msg.length > 0);
+}
+
+/**
+ * Verifies that specific validation error messages are present on the page.
+ * It handles potential whitespace and filters empty strings.
+ *
+ * @param page The Playwright Page object.
+ * @param errorMessageSelector The CSS or XPath selector that identifies all validation error messages.
+ * YOU MUST ADJUST THIS SELECTOR to match your actual HTML structure.
+ * @param expectedErrors An array of strings representing the exact expected error messages.
+ * @param options An object with options for assertion strictness:
+ * - `shouldContainAll` (boolean): If true, asserts that the page contains all `expectedErrors` (order doesn't matter). (Default: true)
+ * - `shouldContainOnly` (boolean): If true, asserts that the page contains *only* `expectedErrors` and no other error messages (strict match). (Default: false)
+ * - `timeout` (number): Max time in milliseconds to wait for error messages to appear. (Default: 5000ms)
+ */
+export async function verifyValidationErrors(
+  page: Page,
+  errorMessageSelector: Locator,
+  expectedErrors: string[],
+  options?: { shouldContainAll?: boolean; shouldContainOnly?: boolean; timeout?: number }
+): Promise<void> {
+  const { shouldContainAll = true, shouldContainOnly = false, timeout = 5000 } = options || {};
+
+  const cleanedActualErrors = await getAllVisibleErrorMessages(page, errorMessageSelector, timeout);
+
+  // Sort both arrays for reliable comparison, as the order of messages in the DOM might vary
+  const sortedExpectedErrors = [...expectedErrors].sort();
+  const sortedActualErrors = [...cleanedActualErrors].sort();
+
+  console.log('\n--- Validation Error Check ---');
+  console.log('Expected:', sortedExpectedErrors);
+  console.log('Actual:  ', sortedActualErrors);
+  console.log('------------------------------');
+
+  if (shouldContainAll) {
+    // Assert that every expected error message is present in the actual messages found.
+    for (const expectedError of sortedExpectedErrors) {
+      if (!sortedActualErrors.includes(expectedError)) {
+        throw new Error(`❌ Expected error message "${expectedError}" was NOT found on the page.`);
+      }
+    }
+    console.log('✅ Assertion: All expected errors are present.');
+  }
+
+  if (shouldContainOnly) {
+    // Assert that the actual messages exactly match the expected messages (implies same count and content).
+    expect(sortedActualErrors).toEqual(sortedExpectedErrors);
+    console.error(
+      `❌ Assertion: Actual errors do not EXACTLY match expected errors.` +
+        `\n  Expected: ${JSON.stringify(sortedExpectedErrors)}` +
+        `\n  Actual:   ${JSON.stringify(sortedActualErrors)}`
+    );
+    console.log('✅ Assertion: Only expected errors are present (strict match).');
+  }
+}
