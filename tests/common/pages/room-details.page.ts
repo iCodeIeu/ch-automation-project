@@ -17,6 +17,7 @@ export class RoomDetailsPage {
   readonly lastNameInput: Locator;
   readonly emailInput: Locator;
   readonly phoneInput: Locator;
+  readonly guestDetailsError: Locator;
   readonly bookingConfirmedTitle: Locator;
   readonly displayedBookingDates: Locator;
   readonly returnHomeButton: Locator;
@@ -35,6 +36,7 @@ export class RoomDetailsPage {
     this.lastNameInput = page.getByRole('textbox', { name: 'Lastname' });
     this.emailInput = page.getByRole('textbox', { name: 'Email' });
     this.phoneInput = page.getByRole('textbox', { name: 'Phone' });
+    this.guestDetailsError = page.locator('//*[@class="alert alert-danger"]//li');
     this.bookingConfirmedTitle = page.getByRole('heading', { name: 'Booking Confirmed', exact: true });
     this.displayedBookingDates = page.locator('//*[@class="text-center pt-2"]//strong');
     this.returnHomeButton = page.getByRole('link', { name: 'Return home', exact: true });
@@ -110,14 +112,18 @@ export class RoomDetailsPage {
     await validateAndPerform(this.reserveNowButton).click();
   }
 
-  async fillGuestBookingDetailsAndCompleteReservation(details: GuestBookingDetails): Promise<void> {
-    await validateAndPerform(this.firstNameInput).fill(details.firstName);
-    await validateAndPerform(this.lastNameInput).fill(details.lastName);
-    await validateAndPerform(this.emailInput).fill(details.email);
-    await validateAndPerform(this.phoneInput).fill(details.phone);
+  async fillGuestBookingDetailsAndProceed(details: Partial<GuestBookingDetails>): Promise<void> {
+    await validateAndPerform(this.firstNameInput).fill(details.firstName || '');
+    await validateAndPerform(this.lastNameInput).fill(details.lastName || '');
+    await validateAndPerform(this.emailInput).fill(details.email || '');
+    await validateAndPerform(this.phoneInput).fill(details.phone || '');
     await validateAndPerform(this.reserveNowButton).click();
+  }
+
+  async verifyBookingSuccess(details: Partial<GuestBookingDetails>): Promise<void> {
     await expect(this.bookingConfirmedTitle).toBeVisible();
     const expectedDateString = `${details.checkInDate} - ${details.checkOutDate}`;
     await expect(this.displayedBookingDates).toHaveText(expectedDateString);
+    console.info(`Booking successfully verified for dates: ${expectedDateString}`);
   }
 }
