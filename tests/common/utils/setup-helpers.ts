@@ -4,14 +4,15 @@ import { RoomDetailsPage } from '../pages/room-details.page';
 import { GuestBookingDetails, SelectedRoomDetails } from '../utils/types';
 import { assertReturnToHomePage } from './shared-helpers';
 
-export type ReservationFlowStep = 'start' | 'selectDates' | 'selectRoom' | 'enterGuestDetails' | 'complete'; // Renamed checkDetails/checkPrice to selectRoom for clarity in the flow
+export type ReservationFlowStep = 'start' | 'selectDates' | 'selectRoom' | 'enterGuestDetails' | 'bookingVerification' | 'complete'; // Renamed checkDetails/checkPrice to selectRoom for clarity in the flow
 
 export const stopAtPriority: Record<ReservationFlowStep, number> = {
-  start: 0,
-  selectDates: 1,
-  selectRoom: 2, // New step for room selection and initial details
-  enterGuestDetails: 3,
-  complete: 4,
+  start: 1,
+  selectDates: 2,
+  selectRoom: 3,
+  enterGuestDetails: 4,
+  bookingVerification: 5,
+  complete: 6,
 };
 
 export async function reservationFlow(
@@ -51,11 +52,16 @@ export async function reservationFlow(
 
   // Step 4: Enter guest details and book the room
   if (shouldProceedTo('enterGuestDetails')) {
-    await roomDetailsPage.fillGuestBookingDetailsAndCompleteReservation(guestDetails);
+    await roomDetailsPage.fillGuestBookingDetailsAndProceed(guestDetails);
+  }
+
+  // Step 5: Verify booking success
+  if (shouldProceedTo('bookingVerification')) {
+    await roomDetailsPage.verifyBookingSuccess(guestDetails);
   }
 
   const reachedComplete = stopAtPriority[stopAt] >= stopAtPriority['complete'];
-  // Final check for completion
+  // Step 6:  Final check for completion
   if (reachedComplete) {
     await assertReturnToHomePage(page);
     console.info('Reservation flow completed.');
