@@ -29,7 +29,7 @@ export const testWithReservation = base.extend<{
   checkOutDate: [
     async ({ checkInDate }, use) => {
       const checkIn = new Date(checkInDate);
-      checkIn.setDate(checkIn.getDate() + 1);
+      checkIn.setDate(checkIn.getDate() + 3);
       await use(checkIn.toISOString().split('T')[0]);
     },
     { scope: 'test' },
