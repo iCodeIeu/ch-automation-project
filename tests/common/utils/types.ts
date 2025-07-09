@@ -1,4 +1,4 @@
-import { Locator } from '@playwright/test';
+import { Locator, APIRequestContext } from '@playwright/test';
 
 export interface SelectedRoomDetails {
   type: string;
@@ -34,6 +34,19 @@ export interface EnquiryDetails {
 export type AuthResponse = {
   token: string;
 };
+
+/**
+ * Represents the API client for authentication.
+ * This class encapsulates the login logic for testing purposes.
+ */
+export class AuthApiClient {
+  private requestContext: APIRequestContext;
+  public authToken: string | undefined;
+
+  constructor(requestContext: APIRequestContext) {
+    this.requestContext = requestContext;
+  }
+}
 
 export type BookingDates = {
   checkin: string;
