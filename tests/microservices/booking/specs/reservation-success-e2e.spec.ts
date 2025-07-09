@@ -2,7 +2,7 @@ import { testWithOptionalReservation } from '../../../common/fixtures/page-fixtu
 import { cleanupBooking } from '../../../common/utils/api-helpers';
 import { expect } from '@playwright/test';
 
-testWithOptionalReservation.describe.only('Reservation Management: End-to-End Success', () => {
+testWithOptionalReservation.describe('Reservation Management: End-to-End Success', () => {
   testWithOptionalReservation.describe('Reservation Management: Standard Full Booking Process', () => {
     testWithOptionalReservation.afterEach(async ({ request, guestDetails }) => {
       console.log('Attempting cleanup with guestDetails:', guestDetails); // Added for extra logging
