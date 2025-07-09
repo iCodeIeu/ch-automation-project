@@ -38,6 +38,8 @@ export const ENQUIRY_DETAILS_FORM_ERRORS = {
   ],
 };
 
+export const ADMIN_INVALID_CREDENTIALS_ERROR = 'Invalid credentials';
+
 export enum AdminCredentials {
   Username = 'admin',
   Password = 'password',
