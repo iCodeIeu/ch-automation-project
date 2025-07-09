@@ -1,10 +1,11 @@
+// Assuming this is in a file like 'your-project/tests/helpers/reservation-flow.ts'
 import { Page } from '@playwright/test';
 import { HomePage } from '../pages/home.page';
 import { RoomDetailsPage } from '../pages/room-details.page';
-import { GuestBookingDetails, SelectedRoomDetails } from '../utils/types';
+import { GuestBookingDetails, SelectedRoomDetails } from '../utils/types'; // Assuming GuestDetails is your type, previously GuestBookingDetails
 import { assertReturnToHomePage } from './shared-helpers';
 
-export type ReservationFlowStep = 'start' | 'selectDates' | 'selectRoom' | 'enterGuestDetails' | 'bookingVerification' | 'complete'; // Renamed checkDetails/checkPrice to selectRoom for clarity in the flow
+export type ReservationFlowStep = 'start' | 'selectDates' | 'selectRoom' | 'enterGuestDetails' | 'bookingVerification' | 'complete';
 
 export const stopAtPriority: Record<ReservationFlowStep, number> = {
   start: 1,
@@ -20,14 +21,11 @@ export async function reservationFlow(
   checkIn: string,
   checkOut: string,
   stopAt: ReservationFlowStep = 'complete',
-  guestDetails: GuestBookingDetails,
-  dateOverride?: { checkIn?: string; checkOut?: string }
+  guestDetails: GuestBookingDetails
 ): Promise<SelectedRoomDetails | undefined> {
   const homePage = new HomePage(page);
   const roomDetailsPage = new RoomDetailsPage(page);
 
-  // This helper checks if the *current* step's priority is less than or equal to the stopAt step's priority.
-  // If it is, we should stop. So, shouldProceed is more intuitive here.
   const shouldProceedTo = (step: ReservationFlowStep) => stopAtPriority[stopAt] > stopAtPriority[step];
 
   let selectedRoom: SelectedRoomDetails | undefined; // To store details of the selected room
@@ -45,6 +43,14 @@ export async function reservationFlow(
   // Step 3: Select a random room and capture its details
   if (shouldProceedTo('selectRoom')) {
     selectedRoom = await homePage.selectRandomRoomOption();
+
+    if (selectedRoom) {
+      guestDetails.roomId = selectedRoom.roomId;
+      console.info(`Assigned selected room ID to guestDetails: ${guestDetails.roomId}`);
+    } else {
+      throw new Error('Failed to select a room. Cannot proceed with reservation flow.');
+    }
+
     console.info(`Selected room: ${selectedRoom.type} with price: ${selectedRoom.price}`);
     await roomDetailsPage.assertRoomDetailsAndNights(selectedRoom, checkIn, checkOut);
     await roomDetailsPage.assertTotalPriceCalculationAndProceed(selectedRoom.price, checkIn, checkOut);
@@ -67,5 +73,6 @@ export async function reservationFlow(
     console.info('Reservation flow completed.');
   }
 
-  return undefined;
+  // Return selectedRoom if needed for further assertions in the test, otherwise return undefined
+  return selectedRoom;
 }
