@@ -31,6 +31,17 @@ testWithOptionalReservation.describe('Admin Login Validation', () => {
     });
   });
 
+  testWithOptionalReservation.describe('Admin Login Validation: Invalid Password and Invalid Username Submission', () => {
+    testWithOptionalReservation.use({
+      stopAt: 'selectDates',
+    });
+
+    testWithOptionalReservation('Should enter an invalid password and check the error is present', async ({ reservation, adminPage }) => {
+      adminPage.login(faker.internet.username(), faker.internet.password());
+      await verifyValidationErrors(reservation.page, adminPage.invalidCredentialsError, [ADMIN_INVALID_CREDENTIALS_ERROR]);
+    });
+  });
+
   testWithOptionalReservation.describe('Admin Login Validation: Empty Field Submissions', () => {
     testWithOptionalReservation.use({
       stopAt: 'selectDates',
