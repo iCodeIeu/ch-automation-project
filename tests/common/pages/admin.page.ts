@@ -8,6 +8,7 @@ export class AdminPage {
   readonly passwordInput: Locator;
   readonly loginButton: Locator;
   readonly invalidCredentialsError: Locator;
+  readonly logoutButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -16,6 +17,7 @@ export class AdminPage {
     this.passwordInput = page.getByRole('textbox', { name: 'Password' });
     this.loginButton = page.getByRole('button', { name: 'Login' });
     this.invalidCredentialsError = page.locator('//*[@class="alert alert-danger"]');
+    this.logoutButton = page.getByRole('button', { name: 'Logout' });
   }
 
   /**
