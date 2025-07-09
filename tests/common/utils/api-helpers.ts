@@ -70,9 +70,6 @@ export class BookingAPI {
         },
       }
     );
-    console.log(
-      `'BOOKID URL, GET BOOKINGS BY ROOM ID, '${BASE_API_URL}${BookingEndpoints.BookingBasePath}${BookingEndpoints.RoomIdQueryParam}${roomId}`
-    );
 
     expect(
       response.ok(),
@@ -80,7 +77,6 @@ export class BookingAPI {
     ).toBeTruthy();
 
     const responseBody = await response.json();
-    console.log(`Raw JSON response for bookings in room ${roomId}:`, JSON.stringify(responseBody, null, 2)); // Keep log for debugging
 
     // Check if responseBody has a 'bookings' property and it's an array
     if (responseBody && Array.isArray(responseBody.bookings)) {
@@ -105,7 +101,6 @@ export class BookingAPI {
       throw new Error('Cannot delete booking: No authentication token available. Please login first.');
     }
 
-    console.log(`Attempting to delete booking ID: ${bookingId}...`);
     // Use the generic base path and append the ID
     const response: APIResponse = await this.requestContext.delete(`${BASE_API_URL}${BookingEndpoints.BookingBasePath}${bookingId}`, {
       headers: {
@@ -199,17 +194,17 @@ export async function cleanupBooking(requestContext: APIRequestContext, guestDet
       console.error('Cleanup failed: Could not obtain authentication token. Aborting cleanup.');
       return; // Exit early if login fails
     }
-    console.log('Cleanup Step 1: Successfully logged in.');
+    console.log('--- Cleanup Step 1a: Successfully logged in. ---');
 
     // Step 2: Find the booking ID using the guest details (now relies on guestDetails.roomid)
     console.log('Cleanup Step 2: Attempting to find booking ID by guest details...');
     bookingId = await findBookingIdByGuestDetails(bookingApi, guestDetails);
-    console.log(`Cleanup Step 2a: Found booking ID: ${bookingId}`);
+    console.log(`--- Cleanup Step 2a: Found booking ID: ${bookingId} ---`);
 
     // Step 3: Delete the booking using the authenticated session and found ID
     console.log(`Cleanup Step 3: Attempting to delete booking ID: ${bookingId}...`);
     await bookingApi.deleteBooking(bookingId);
-    console.log(`--- Successfully completed cleanup for booking ID: ${bookingId} ---`);
+    console.log(`--- Cleanup Step 3a:Successfully completed cleanup for booking ID: ${bookingId} ---`);
   } catch (error) {
     console.error(`--- Cleanup failed for booking for guest ${guestDetails.firstName} ${guestDetails.lastName} ---`);
     console.error(`Error during cleanup: ${error instanceof Error ? error.message : String(error)}`);
