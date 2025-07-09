@@ -5,6 +5,18 @@ import { expect } from '@playwright/test';
 /**
  * @file This file contains non-functional (visual) tests for the reservation flow.
  * It verifies consistent UI between runs by masking dynamic values to ensure stability.
+ *
+ * Important Note on Dynamic Content:
+ * This platform undergoes frequent visual updates and dynamic content changes multiple times daily.
+ * While comprehensive masking is applied, significant variations in content and layout (e.g., dynamic container heights)
+ * can lead to frequent snapshot mismatches.
+ *
+ * These tests are crucial for identifying *unintended* visual regressions that may occur
+ * due to code changes, even in a highly dynamic environment.
+ *
+ * To manage baselines effectively:
+ * - Snapshots may require frequent updates. Use `npx playwright test --update-snapshots`
+ * to refresh baselines when *intentional* visual changes have been deployed.
  */
 
 testWithOptionalReservation.describe('Visual Regression: Reservation Flow', () => {
