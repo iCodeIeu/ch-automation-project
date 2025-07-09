@@ -13,6 +13,9 @@ export class HomePage {
   readonly checkInDateToSelect: Locator;
   readonly checkOutDateToSelect: Locator;
   readonly checkAvailabilityButton: Locator;
+  readonly locationTitle: Locator;
+  readonly roomsTitle: Locator;
+  readonly contactUsTitle: Locator;
   readonly roomCard: Locator;
   readonly roomCardTitle: Locator;
   readonly roomCardRate: Locator;
@@ -43,6 +46,9 @@ export class HomePage {
     this.checkInDateToSelect = page.getByRole('button', { name: '' });
     this.checkOutDateToSelect = page.getByRole('button', { name: '' });
     this.checkAvailabilityButton = page.getByRole('button', { name: 'Check Availability', exact: true });
+    this.locationTitle = page.getByRole('heading', { name: 'Our Location' });
+    this.roomsTitle = page.getByRole('heading', { name: 'Our Rooms' });
+    this.contactUsTitle = page.getByRole('heading', { name: 'Send Us a Message' });
     this.roomCard = page.locator('//*[@class="card h-100 shadow-sm room-card"]');
     this.roomCardTitle = this.roomCard.getByRole('heading', { level: 5 });
     this.roomCardRate = this.roomCard.locator('//*[@class="fw-bold fs-5"]');

@@ -21,6 +21,12 @@ export class RoomDetailsPage {
   readonly bookingConfirmedTitle: Locator;
   readonly displayedBookingDates: Locator;
   readonly returnHomeButton: Locator;
+  readonly similarRoomsContainer: Locator;
+  readonly priceSummaryCard: Locator;
+  readonly calendarBookingsCard: Locator;
+  readonly selectedRoomDetailsCard: Locator;
+  readonly roomPricePerNight: Locator;
+  readonly footerContainer: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -40,7 +46,12 @@ export class RoomDetailsPage {
     this.bookingConfirmedTitle = page.getByRole('heading', { name: 'Booking Confirmed', exact: true });
     this.displayedBookingDates = page.locator('//*[@class="text-center pt-2"]//strong');
     this.returnHomeButton = page.getByRole('link', { name: 'Return home', exact: true });
-    // const highlightedNumberSeven = page.getByRole('button', { name: '07' }).getByText('Selected');
+    this.similarRoomsContainer = page.locator('//*[@class="container"]').nth(2);
+    this.priceSummaryCard = page.locator('//*[@class="card bg-light border-0 mb-4"]');
+    this.calendarBookingsCard = page.locator('//*[@class="rbc-month-view"]');
+    this.selectedRoomDetailsCard = page.locator('//*[@class="col-lg-8 mb-4 mb-lg-0"]');
+    this.roomPricePerNight = page.locator('//*[@class="fs-2 fw-bold text-primary me-2"]');
+    this.footerContainer = page.locator('//*[@class="bg-dark text-white py-5"]');
   }
 
   /**
