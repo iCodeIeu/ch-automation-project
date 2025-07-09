@@ -12,15 +12,14 @@ export class BookingAPI {
   }
 
   /**
-   * Authenticates with the API and retrieves an authentication token.
-   * @param username The username for authentication (default: 'admin').
-   * @param password The password for authentication (default: 'password123').
-   * @returns The authentication token string.
-   * @throws Error if authentication fails or token is not found.
+   * Attempts to log in with the provided credentials.
+   * @param username The username for login. Defaults to AdminCredentials.Username.
+   * @param password The password for login. Defaults to AdminCredentials.Password.
+   * @returns The authentication token if successful, otherwise undefined.
    */
   async login(username = AdminCredentials.Username, password = AdminCredentials.Password): Promise<string | undefined> {
     console.log(`Attempting to login as ${username}...`);
-    const response: APIResponse = await this.requestContext.post(`${BASE_API_URL}${BookingEndpoints.Login}`, {
+    const response = await this.requestContext.post(`${BASE_API_URL}${BookingEndpoints.Login}`, {
       data: {
         username: username,
         password: password,
@@ -28,16 +27,18 @@ export class BookingAPI {
     });
 
     // Assert that the response is OK (status 2xx)
-    expect(response.ok(), `Login failed with status ${response.status()}: ${await response.text()}`).toBeTruthy();
+    // For positive test cases, we expect OK. For negative, we'll assert specific error statuses.
+    if (!response.ok()) {
+      console.log(`Login attempt failed with status ${response.status()}: ${await response.text()}`);
+      return undefined;
+    }
 
     const authResponseBody: AuthResponse = await response.json();
-    // Corrected assertion: Check that the 'token' property exists and is a string.
-    // The previous assertion was checking if the token's VALUE was the error message string.
-    expect(authResponseBody).toHaveProperty('token'); // Checks if 'token' property exists
-    expect(typeof authResponseBody.token).toBe('string'); // Checks if the value is a string
-    expect(authResponseBody.token.length).toBeGreaterThan(0); // Checks if the token string is not empty
+    expect(authResponseBody).toHaveProperty('token');
+    expect(typeof authResponseBody.token).toBe('string');
+    expect(authResponseBody.token.length).toBeGreaterThan(0);
 
-    this.authToken = authResponseBody.token; // Store the token for future authenticated requests
+    this.authToken = authResponseBody.token;
     if (this.authToken) {
       console.log(`Successfully logged in. Token: ${this.authToken.substring(0, 5)}...`);
     } else {
