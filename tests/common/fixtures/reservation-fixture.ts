@@ -18,18 +18,18 @@ export const testWithOptionalReservation = base.extend<{
 }>({
   checkInDate: [
     async ({}, use) => {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      await use(tomorrow.toISOString().split('T')[0]);
+      const fourWeeksTime = new Date();
+      fourWeeksTime.setDate(fourWeeksTime.getDate() + 28);
+      await use(fourWeeksTime.toISOString().split('T')[0]);
     },
     { scope: 'test' },
   ],
 
   checkOutDate: [
     async ({ checkInDate }, use) => {
-      const checkIn = new Date(checkInDate);
-      checkIn.setDate(checkIn.getDate() + 3);
-      await use(checkIn.toISOString().split('T')[0]);
+      const checkOut = new Date(checkInDate);
+      checkOut.setDate(checkOut.getDate() + 7);
+      await use(checkOut.toISOString().split('T')[0]);
     },
     { scope: 'test' },
   ],

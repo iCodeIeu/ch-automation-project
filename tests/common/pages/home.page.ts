@@ -12,6 +12,7 @@ export class HomePage {
   readonly datePickerModal: Locator;
   readonly checkInDateToSelect: Locator;
   readonly checkOutDateToSelect: Locator;
+  readonly nextMonthButton: Locator;
   readonly checkAvailabilityButton: Locator;
   readonly locationTitle: Locator;
   readonly roomsTitle: Locator;
@@ -45,6 +46,7 @@ export class HomePage {
     this.datePickerModal = page.locator('//*[@class="react-datepicker"]');
     this.checkInDateToSelect = page.getByRole('button', { name: '' });
     this.checkOutDateToSelect = page.getByRole('button', { name: '' });
+    this.nextMonthButton = page.getByRole('button', { name: 'Next Month' });
     this.checkAvailabilityButton = page.getByRole('button', { name: 'Check Availability', exact: true });
     this.locationTitle = page.getByRole('heading', { name: 'Our Location' });
     this.roomsTitle = page.getByRole('heading', { name: 'Our Rooms' });
@@ -82,6 +84,33 @@ export class HomePage {
     return `${weekday}, ${dayOfMonth} ${monthName}`;
   }
 
+  /**
+   * Helper method to click a date in the date picker.
+   * If the date is not visible, it clicks the 'Next Month' button once and retries.
+   *
+   * @param dateLocator The Playwright Locator for the specific date 'option' to click.
+   * @param dateDescription A descriptive string for logging (e.g., "Check-in Date: 2025-07-15").
+   */
+  private async selectDateInDatePicker(dateLocator: Locator, dateDescription: string): Promise<void> {
+    if (await dateLocator.isVisible()) {
+      await validateAndPerform(dateLocator).click();
+      console.log(`Successfully selected ${dateDescription}.`);
+      return;
+    }
+
+    console.warn(`${dateDescription} not visible in current month. Clicking next month arrow.`);
+    await validateAndPerform(this.nextMonthButton).click();
+    await this.datePickerModal.waitFor({ state: 'visible' });
+
+    if (await dateLocator.isVisible()) {
+      await validateAndPerform(dateLocator).click();
+      console.log(`Successfully selected ${dateDescription} after navigating to next month.`);
+      return;
+    } else {
+      throw new Error(`Failed to select ${dateDescription}. It was not found in the current or next month view.`);
+    }
+  }
+
   async enterCheckInCheckOutDatesAndSubmit(page, checkInDate: string, checkOutDate: string): Promise<void> {
     const formattedCheckInDate = this.formatDateForDatePicker(checkInDate);
     const formattedCheckOutDate = this.formatDateForDatePicker(checkOutDate);
@@ -89,15 +118,13 @@ export class HomePage {
     const checkInDateToSelect = this.page.getByRole('option', { name: `Choose ${formattedCheckInDate}` });
     const checkOutDateToSelect = this.page.getByRole('option', { name: `Choose ${formattedCheckOutDate}` });
 
-    console.info(`Entered check-in: ${checkInDate} (${formattedCheckInDate}), check-out: ${checkOutDate} (${formattedCheckOutDate})`);
-
     await validateAndPerform(this.checkInDateInput).click();
     await this.datePickerModal.waitFor({ state: 'visible' });
-    await validateAndPerform(checkInDateToSelect).click();
+    await this.selectDateInDatePicker(checkInDateToSelect, `Check-in Date: ${checkInDate}`);
     await this.datePickerModal.waitFor({ state: 'hidden' });
     await validateAndPerform(this.checkOutDateInput).click();
     await this.datePickerModal.waitFor({ state: 'visible' });
-    await validateAndPerform(checkOutDateToSelect).click();
+    await this.selectDateInDatePicker(checkOutDateToSelect, `Check-out Date: ${checkOutDate}`);
     await this.datePickerModal.waitFor({ state: 'hidden' });
     await validateAndPerform(this.checkAvailabilityButton).click();
   }
