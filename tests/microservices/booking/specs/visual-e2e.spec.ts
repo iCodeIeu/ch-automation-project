@@ -14,7 +14,7 @@ testWithOptionalReservation.describe('Visual Regression: Reservation Flow', () =
   testWithOptionalReservation('should have consistent UI throughout the home page', async ({ reservation, homePage }) => {
     await expect(reservation.page).toHaveScreenshot('home-page.png', {
       fullPage: true,
-      mask: [homePage.roomCard],
+      mask: [homePage.roomCard, homePage.checkInDateInput, homePage.checkOutDateInput],
     });
   });
 
@@ -45,8 +45,6 @@ testWithOptionalReservation.describe('Visual Regression: Reservation Flow', () =
     });
     testWithOptionalReservation.use({
       stopAt: 'bookingVerification',
-      checkInDate: '2025-07-21',
-      checkOutDate: '2025-07-28',
     });
     testWithOptionalReservation('should have consistent UI upong successful booking', async ({ reservation, roomDetailsPage }) => {
       await expect(reservation.page).toHaveScreenshot('booking-verification.png', {
