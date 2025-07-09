@@ -1,11 +1,11 @@
-import { testWithReservation, expect } from '../../../common/fixtures/page-fixture';
+import { testWithOptionalReservation, expect } from '../../../common/fixtures/page-fixture';
 import { verifyValidationErrors } from '../../../common/utils/shared-helpers';
 import { ENQUIRY_DETAILS_FORM_ERRORS } from '../../../common/utils/constants';
 import { faker } from '@faker-js/faker';
 
-testWithReservation.describe('Enquiry Details Validation', () => {
-  testWithReservation.describe('Enquiry Details Validation: Empty Fields Submission', () => {
-    testWithReservation.use({
+testWithOptionalReservation.describe('Enquiry Details Validation', () => {
+  testWithOptionalReservation.describe('Enquiry Details Validation: Empty Fields Submission', () => {
+    testWithOptionalReservation.use({
       stopAt: 'selectDates',
       enquiryDetailsOverride: {
         name: '',
@@ -16,7 +16,7 @@ testWithReservation.describe('Enquiry Details Validation', () => {
       },
     });
 
-    testWithReservation(
+    testWithOptionalReservation(
       'Should check that the empty form errors are present',
       async ({ reservation, homePage, enquiryDetailsOverride }) => {
         await homePage.fillEnquiryDetailsAndSubmit(enquiryDetailsOverride!);
@@ -25,8 +25,8 @@ testWithReservation.describe('Enquiry Details Validation', () => {
     );
   });
 
-  testWithReservation.describe('Enquiry Details Validation: Invalid Input Submission', () => {
-    testWithReservation.use({
+  testWithOptionalReservation.describe('Enquiry Details Validation: Invalid Input Submission', () => {
+    testWithOptionalReservation.use({
       stopAt: 'selectDates',
       enquiryDetailsOverride: {
         name: faker.person.fullName(),
@@ -37,7 +37,7 @@ testWithReservation.describe('Enquiry Details Validation', () => {
       },
     });
 
-    testWithReservation(
+    testWithOptionalReservation(
       'Should check that the populated form errors are present',
       async ({ reservation, homePage, enquiryDetailsOverride }) => {
         await homePage.fillEnquiryDetailsAndSubmit(enquiryDetailsOverride!);
@@ -46,8 +46,8 @@ testWithReservation.describe('Enquiry Details Validation', () => {
     );
   });
 
-  testWithReservation.describe('Enquiry Details Validation: Successful Submission', () => {
-    testWithReservation.use({
+  testWithOptionalReservation.describe('Enquiry Details Validation: Successful Submission', () => {
+    testWithOptionalReservation.use({
       stopAt: 'selectDates',
       enquiryDetailsOverride: {
         name: faker.person.fullName(),
@@ -58,11 +58,14 @@ testWithReservation.describe('Enquiry Details Validation', () => {
       },
     });
 
-    testWithReservation('Should successfully submit the enquiry form', async ({ reservation, homePage, enquiryDetailsOverride }) => {
-      await homePage.fillEnquiryDetailsAndSubmit(enquiryDetailsOverride!);
-      await verifyValidationErrors(reservation.page, homePage.enquiryDetailsError, []);
-      await expect(homePage.successfulEnquirySubmisionMessage).toContainText(enquiryDetailsOverride?.name || '');
-      await expect(homePage.successfulEnquiruSubmissionSubject).toContainText(enquiryDetailsOverride?.subject || '');
-    });
+    testWithOptionalReservation(
+      'Should successfully submit the enquiry form',
+      async ({ reservation, homePage, enquiryDetailsOverride }) => {
+        await homePage.fillEnquiryDetailsAndSubmit(enquiryDetailsOverride!);
+        await verifyValidationErrors(reservation.page, homePage.enquiryDetailsError, []);
+        await expect(homePage.successfulEnquirySubmisionMessage).toContainText(enquiryDetailsOverride?.name || '');
+        await expect(homePage.successfulEnquiruSubmissionSubject).toContainText(enquiryDetailsOverride?.subject || '');
+      }
+    );
   });
 });
