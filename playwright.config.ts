@@ -33,6 +33,17 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
 
+  snapshotPathTemplate: 'visual-snapshots/{projectName}/{testFilePath}/{arg}{ext}',
+
+  expect: {
+    // Configuration for expect(page).toHaveScreenshot()
+    toHaveScreenshot: {
+      maxDiffPixelRatio: 0.5, // Global tolerance for visual differences
+      // You can also set a global 'mask' here if certain elements are always dynamic
+      // mask: [page.locator('.global-dynamic-element')],
+    },
+  },
+
   /* Configure projects for major browsers */
   projects: [
     {
