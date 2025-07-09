@@ -17,7 +17,7 @@ interface Fixtures {
   homePage: HomePage;
   roomDetailsPage: RoomDetailsPage;
   navigationBar: NavigationBarPage;
-  adminPafe: AdminPage;
+  adminPage: AdminPage;
 }
 
 // Define a function that returns the page objects to avoid repetition
