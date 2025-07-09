@@ -37,3 +37,16 @@ export const ENQUIRY_DETAILS_FORM_ERRORS = {
     'must be a well-formed email address',
   ],
 };
+
+export enum AdminCredentials {
+  Username = 'admin',
+  Password = 'password',
+}
+export const BASE_API_URL = 'https://automationintesting.online/api';
+
+export enum BookingEndpoints {
+  Login = '/auth/login',
+  ValidateToken = '/auth/validate',
+  BookingBasePath = '/booking/',
+  RoomIdQueryParam = '?roomid=',
+}
