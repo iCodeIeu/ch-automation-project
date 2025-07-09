@@ -4,14 +4,13 @@ import { faker } from '@faker-js/faker';
 import { reservationFlow, ReservationFlowStep } from '../utils/setup-helpers';
 import { SelectedRoomDetails, GuestBookingDetails, EnquiryDetails } from '../utils/types';
 
-export const testWithReservation = base.extend<{
+export const testWithOptionalReservation = base.extend<{
   checkInDate: string;
   checkOutDate: string;
   stopAt: ReservationFlowStep;
   guestDetails: GuestBookingDetails;
   guestDetailsOverride?: Partial<GuestBookingDetails>;
   enquiryDetailsOverride?: Partial<EnquiryDetails>;
-  dateOverride?: { checkIn?: string; checkOut?: string };
   reservation: {
     page: Page;
     selectedRoom?: SelectedRoomDetails;
@@ -65,6 +64,7 @@ export const testWithReservation = base.extend<{
         phone: faker.phone.number(),
         checkInDate: checkInDate,
         checkOutDate: checkOutDate,
+        roomId: 0, // This will be set later in the reservation flow
       };
 
       const finalGuestDetails: GuestBookingDetails = {
@@ -77,30 +77,22 @@ export const testWithReservation = base.extend<{
     { scope: 'test' },
   ],
 
-  dateOverride: [
-    async ({}, use) => {
-      await use(undefined); // Default to no date overrides
-    },
-    { scope: 'test' },
-  ],
-
   reservation: [
-    async (
-      {
-        page,
-        checkInDate,
-        checkOutDate,
-        stopAt,
-        guestDetails, // This is the final, complete GuestBookingDetails object
-        dateOverride, // <--- ENSURE THIS IS PRESENT IN THE DEPENDENCY LIST
-      },
-      use
-    ) => {
+    async ({ page, checkInDate, checkOutDate, stopAt, guestDetails }, use) => {
       let selectedRoom: SelectedRoomDetails | undefined;
 
-      selectedRoom = await reservationFlow(page, checkInDate, checkOutDate, stopAt, guestDetails, dateOverride);
+      // Perform the setup steps for the reservation flow
+      selectedRoom = await reservationFlow(page, checkInDate, checkOutDate, stopAt, guestDetails);
 
+      // Yield control to the test function.
+      // The test will execute now, using the 'page' and 'selectedRoom' provided.
       await use({ page, selectedRoom });
+
+      // --- Teardown: Clear browser state after the test has completed ---
+      // This ensures that the next test starts with a clean slate,
+      // preventing data from previous tests (like selected dates) from persisting.
+      console.log('Clearing browser cookies...');
+      await page.context().clearCookies();
     },
     { scope: 'test' },
   ],

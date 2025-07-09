@@ -35,11 +35,11 @@ export const test = base.extend<Fixtures>(getPageFiles());
 
 // Import the login fixture to combine it with shared page objects
 
-import { testWithReservation as baseWithReservation } from '../fixtures/reservation-fixture';
+import { testWithOptionalReservation as baseWithOptionalReservation } from '../fixtures/reservation-fixture';
 
 // Includes the page files and login fixture to ensure the user is logged in before running tests
 
-export const testWithReservation = baseWithReservation.extend<Fixtures>(getPageFiles());
+export const testWithOptionalReservation = baseWithOptionalReservation.extend<Fixtures>(getPageFiles());
 
 // Re-export the expect function from Playwright for use in the tests
 
