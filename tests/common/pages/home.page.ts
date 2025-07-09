@@ -110,33 +110,36 @@ export class HomePage {
 
   /**
    * Internal helper to extract details from all room cards on the page.
-   * Adjust selectors within this method based on your actual HTML structure.
+   * This method is now simplified as the exact roomId for cleanup is obtained from the detail page.
    */
   private async getAllRoomOptionInternalDetails(): Promise<RoomOptionInternalDetails[]> {
+    await this.page.waitForLoadState('networkidle');
+    await expect(this.roomCardBookButton.first()).toBeVisible(); // Check first button
+    const count = await this.roomCardBookButton.count(); // Get total count of room containers
+    console.log(`Found ${count} room cards.`);
     const rooms: RoomOptionInternalDetails[] = [];
-    await expect(this.roomCard.last()).toBeVisible();
-    const count = await this.roomCard.count(); // Get total count of room containers
 
     if (count === 0) {
       throw new Error('No room cards found on the home page with the selector ".room-card". Please check selector.');
     }
 
     for (let i = 0; i < count; i++) {
-      // Get the specific title locator for the current room card
       const typeLocator = this.roomCardTitle.nth(i);
       const type = (await typeLocator.textContent())?.trim() || `Room ${i + 1}`;
-
-      // Get the price using the dedicated helper for the current room card
       const price = await this.getRoomRateValue(i);
-
-      // Get the button locator using the dedicated helper for the current room card
       const bookNowButton = await this.getRoomBookButtonLocator(i);
 
+      // roomId is no longer extracted here, it will be extracted on the reservation page.
+      // We can initialize it as undefined or null here, or simply omit it from the push
+      // if the interface allowed it. For consistency with SelectedRoomDetails, we'll keep it,
+      // but it won't be used for finding the booking at this stage.
+      const roomId: string | undefined = undefined; // Explicitly set to undefined
+
       if (price !== null) {
-        // Only add if price was successfully extracted
-        rooms.push({ type, price, bookNowButton: bookNowButton }); // Store the specific button Locator
+        // Only check for price, as roomId is not reliably available here
+        rooms.push({ type, price, bookNowButton: bookNowButton, roomId: roomId }); // roomId will be undefined here
       } else {
-        console.warn(`Room "${type}" does not have a visible price or 'BOOK NOW' button.`);
+        console.warn(`Room "${type}" does not have a visible price or 'BOOK NOW' button. This room will be skipped for selection.`);
       }
     }
 
@@ -148,20 +151,37 @@ export class HomePage {
 
   /**
    * Selects a random room option from the available choices, clicks its "BOOK NOW" button,
-   * and returns the type and price of the selected room.
-   * This method assumes navigating to the room details page after clicking.
+   * and returns the type, price, and roomId of the selected room.
+   * This method now reliably extracts the roomId from the URL of the room details page.
    */
   async selectRandomRoomOption(): Promise<SelectedRoomDetails> {
     const availableRooms = await this.getAllRoomOptionInternalDetails();
-    const randomIndex = faker.number.int({ min: 0, max: availableRooms.length - 1 });
-    const selectedRoom = availableRooms[randomIndex];
+    const randomIndex = Math.floor(Math.random() * availableRooms.length);
+    const selectedRoom = availableRooms[randomIndex]; // selectedRoom.roomId will be undefined here
 
+    await selectedRoom.bookNowButton.waitFor({ state: 'visible', timeout: 10000 });
     await selectedRoom.bookNowButton.scrollIntoViewIfNeeded();
-    await validateAndPerform(selectedRoom.bookNowButton).click();
-    console.log(`Randomly selected room: "${selectedRoom.type}" with 1-night price: ${selectedRoom.price}`);
-
+    await validateAndPerform(selectedRoom.bookNowButton).click(); // Using direct click for simplicity, adjust if you have validateAndPerform
     await this.page.waitForLoadState('domcontentloaded');
-    return { type: selectedRoom.type, price: selectedRoom.price };
+    const currentUrl = this.page.url();
+    console.log(`Current URL after clicking Book Now: ${currentUrl}`); // Added log for URL
+    // Regex to capture ID from /reservation/{id}
+    const urlMatch = currentUrl.match(/\/reservation\/(\d+)/);
+    console.log(`URL Match result: ${JSON.stringify(urlMatch)}`); // Added log for regex match result
+    let actualRoomId: string;
+
+    if (urlMatch && urlMatch[1]) {
+      actualRoomId = urlMatch[1];
+      console.log(`Successfully extracted actual Room ID from URL: ${actualRoomId}`);
+    } else {
+      // If URL pattern is unexpected, this indicates a serious issue with navigation or URL structure.
+      // We should throw an error here, as we rely on this for cleanup.
+      throw new Error(`Could not extract Room ID from reservation URL: ${currentUrl}. Expected pattern /reservation/{id}.`);
+    }
+
+    console.log(`Randomly selected room: "${selectedRoom.type}" (ID: ${actualRoomId}) with 1-night price: ${selectedRoom.price}`);
+
+    return { type: selectedRoom.type, price: selectedRoom.price, roomId: Number(actualRoomId) };
   }
 
   async fillEnquiryDetailsAndSubmit(details: Partial<EnquiryDetails>): Promise<void> {
