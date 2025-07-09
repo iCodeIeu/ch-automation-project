@@ -2,6 +2,8 @@
 import { test as base } from '@playwright/test';
 import { HomePage } from '../pages/home.page';
 import { RoomDetailsPage } from '../pages/room-details.page';
+import { NavigationBarPage } from '../pages/navigation-bar.page';
+import { AdminPage } from '../pages/admin.page';
 
 /**
  * This interface defines the fixtures used in our tests.
@@ -14,6 +16,8 @@ import { RoomDetailsPage } from '../pages/room-details.page';
 interface Fixtures {
   homePage: HomePage;
   roomDetailsPage: RoomDetailsPage;
+  navigationBar: NavigationBarPage;
+  adminPafe: AdminPage;
 }
 
 // Define a function that returns the page objects to avoid repetition
@@ -26,6 +30,14 @@ function getPageFiles() {
     roomDetailsPage: async ({ page }, use) => {
       const roomDetailsPage = new RoomDetailsPage(page);
       await use(roomDetailsPage);
+    },
+    navigationBar: async ({ page }, use) => {
+      const navigationBar = new NavigationBarPage(page);
+      await use(navigationBar);
+    },
+    adminPage: async ({ page }, use) => {
+      const adminPage = new AdminPage(page);
+      await use(adminPage);
     },
   };
 }
