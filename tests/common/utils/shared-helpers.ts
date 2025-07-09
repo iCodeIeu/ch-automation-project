@@ -1,6 +1,8 @@
 import { Page, expect, Locator } from '@playwright/test';
 import { HomePage } from '../pages/home.page';
 import { RoomDetailsPage } from '../pages/room-details.page';
+import { NavigationBarPage } from '../pages/navigation-bar.page';
+import { AdminPage } from '../pages/admin.page';
 
 export async function assertReturnToHomePage(page: Page): Promise<void> {
   const homePage = new HomePage(page);
@@ -171,4 +173,81 @@ export async function verifyValidationErrors(
     );
     console.log('✅ Assertion: Only expected errors are present (strict match).');
   }
+}
+
+/**
+ * Provides a consolidated set of navigation actions for the application.
+ * This helper initializes necessary Page Object Models and exposes methods
+ * to click navigation links and assert their outcomes.
+ *
+ * @param page The Playwright Page object.
+ * @returns An object containing various navigation helper methods.
+ */
+
+export function createNavigationActions(page: Page) {
+  const homePage = new HomePage(page);
+  const navigationBar = new NavigationBarPage(page);
+  const adminPage = new AdminPage(page);
+
+  return {
+    /**
+     * Clicks the Home link in the navigation bar and asserts the home page title.
+     */
+    async clickHome(): Promise<void> {
+      await validateAndPerform(navigationBar.homeLink).click();
+      await expect(homePage.pageTitle).toBeVisible();
+    },
+
+    /**
+     * Clicks the Rooms link in the navigation bar and asserts the rooms title is.
+     */
+    async clickRooms(): Promise<void> {
+      await validateAndPerform(navigationBar.roomsLink).click();
+      await expect(homePage.roomsTitle).toBeVisible();
+    },
+
+    /**
+     * Clicks the Booking link in the navigation bar and asserts the check availability button.
+     */
+    async clickBooking(): Promise<void> {
+      await validateAndPerform(navigationBar.bookingLink).click();
+      await expect(homePage.checkAvailabilityButton).toBeVisible();
+    },
+
+    /**
+     * Clicks the Amenities link in the navigation bar and asserts the check availability button.
+     */
+
+    // Issue: Amenities link is currently broken, so not included in navigation test currently
+    async clickAmenities(): Promise<void> {
+      // Ensure navigationBar.amenitiesLink is defined in NavBarPage
+      await validateAndPerform(navigationBar.amenitiesLink).click();
+      await page.waitForLoadState('domcontentloaded');
+    },
+
+    /**
+     * Clicks the Location link in the navigation bar and asserts the location title.
+     */
+    async clickLocation(): Promise<void> {
+      await validateAndPerform(navigationBar.locationLink).click();
+      await expect(homePage.locationTitle).toBeVisible();
+    },
+
+    /**
+     * Clicks the Contact link in the navigation bar and waits for page load.
+     */
+    async clickContact(): Promise<void> {
+      await validateAndPerform(navigationBar.contactLink).click();
+      await expect(homePage.contactUsTitle).toBeVisible();
+    },
+
+    /**
+     * Clicks the Admin (Login) link in the navigation bar and waits for page load.
+     */
+    async clickAdmin(): Promise<void> {
+      await validateAndPerform(navigationBar.adminLink).click();
+      await page.waitForLoadState('domcontentloaded');
+      await expect(adminPage.pageTitle).toBeVisible();
+    },
+  };
 }
