@@ -77,7 +77,7 @@ You can also specify firefox or webkit.
 
 The project is organized to promote maintainability and scalability, separating concerns into logical directories:
 
-.
+```
 ├── tests/
 │ ├── common/
 │ │ ├── fixtures/ # Custom Playwright fixtures (e.g., page-fixture, reservation-fixture)
@@ -103,6 +103,7 @@ The project is organized to promote maintainability and scalability, separating 
 │ ├── coverage/
 │ └── specs/ # Message API test specifications
 └── visual-snapshots/ # Stores visual regression test snapshots
+```
 
 ## 🧹 Code Formatting
 
