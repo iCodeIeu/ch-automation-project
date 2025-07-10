@@ -1,3 +1,10 @@
+/**
+ * @file This file contains Playwright tests designed to validate the functionality
+ * of the contact enquiry form on the application's home page. It includes test cases
+ * for submitting the form with empty fields, invalid input, and valid data,
+ * asserting the correct display of validation errors or success messages.
+ */
+
 import { testWithOptionalReservation, expect } from '../../../common/fixtures/page-fixture';
 import { verifyValidationErrors } from '../../../common/utils/shared-helpers';
 import { ENQUIRY_DETAILS_FORM_ERRORS } from '../../../common/utils/constants';

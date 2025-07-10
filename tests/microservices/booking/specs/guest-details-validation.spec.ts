@@ -1,3 +1,9 @@
+/**
+ * @file This file contains Playwright tests specifically for validating the guest details form
+ * during the room reservation process. It covers scenarios for both empty field submissions
+ * and submissions with invalid input formats or lengths.
+ */
+
 import { testWithOptionalReservation } from '../../../common/fixtures/page-fixture';
 import { verifyValidationErrors } from '../../../common/utils/shared-helpers';
 import { GUEST_DETAILS_FORM_ERRORS } from '../../../common/utils/constants';

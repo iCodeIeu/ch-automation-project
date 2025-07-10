@@ -1,7 +1,3 @@
-import { testWithOptionalReservation } from '../../../common/fixtures/page-fixture';
-import { cleanupBooking } from '../../../common/utils/api-helpers';
-import { expect } from '@playwright/test';
-
 /**
  * @file This file contains non-functional (visual) tests for the reservation flow.
  * It verifies consistent UI between runs by masking dynamic values to ensure stability.
@@ -18,6 +14,10 @@ import { expect } from '@playwright/test';
  * - Snapshots may require frequent updates. Use `npx playwright test --update-snapshots`
  * to refresh baselines when *intentional* visual changes have been deployed.
  */
+
+import { testWithOptionalReservation } from '../../../common/fixtures/page-fixture';
+import { cleanupBooking } from '../../../common/utils/api-helpers';
+import { expect } from '@playwright/test';
 
 testWithOptionalReservation.describe('Visual Regression: Reservation Flow', () => {
   testWithOptionalReservation.use({

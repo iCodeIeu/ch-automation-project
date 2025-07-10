@@ -1,4 +1,11 @@
+/**
+ * @file This file contains a collection of constants used across the test automation framework,
+ * primarily related to financial calculations, form validation error messages,
+ * administrative credentials, and API endpoint configurations for a booking service.
+ */
+
 export const CLEANING_FEE: number = 25;
+
 export const SERVICE_FEE: number = 15;
 
 export const GUEST_DETAILS_FORM_ERRORS = {

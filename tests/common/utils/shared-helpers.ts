@@ -1,8 +1,25 @@
+/**
+ * @file This file contains a collection of shared helper functions designed to support
+ * various common operations and assertions across Playwright tests. These helpers
+ * abstract repetitive UI interactions, data extraction, and validation logic
+ * to improve test readability, maintainability, and reusability.
+ */
+
 import { Page, expect, Locator } from '@playwright/test';
 import { HomePage } from '../pages/home.page';
 import { RoomDetailsPage } from '../pages/room-details.page';
 import { NavigationBarPage } from '../pages/navigation-bar.page';
 import { AdminPage } from '../pages/admin.page';
+
+/**
+ * Asserts that the application successfully returns to the home page.
+ * This function clicks the "Return Home" button, typically found on a
+ * room details or booking confirmation page, and then verifies that
+ * key elements of the home page (like its title and a primary call-to-action button)
+ * are visible and enabled, confirming a successful navigation.
+ *
+ * @param page The Playwright `Page` object used to interact with the browser.
+ */
 
 export async function assertReturnToHomePage(page: Page): Promise<void> {
   const homePage = new HomePage(page);
@@ -12,6 +29,14 @@ export async function assertReturnToHomePage(page: Page): Promise<void> {
   await expect(homePage.pageTitle).toBeVisible();
   await expectVisibleAndEnabled(homePage.primaryBookNowButton);
 }
+
+/**
+ * Extracts and returns numerical digits (integers or decimals) from the text content of a given Playwright `Locator`.
+ * This helper is useful for parsing numeric values, such as prices or quantities, directly from UI elements.
+ *
+ * @param selector The Playwright `Locator` from which to extract the digits.
+ * @returns A Promise that resolves to the extracted number. Returns `null` if no digits are found in the locator's text content.
+ */
 
 export async function getDigits(selector: Locator): Promise<number | null> {
   const text = (await selector.textContent()) ?? '';
@@ -57,9 +82,29 @@ export function calculateNumberOfNights(checkInDateStr: string, checkOutDateStr:
   return numberOfNights;
 }
 
+/**
+ * Asserts that a given Playwright `Locator` is both **visible** and **enabled**.
+ * This function uses `Promise.all` to concurrently check both conditions,
+ * making it an efficient way to verify that a UI element is ready for interaction.
+ *
+ * @param locator The Playwright `Locator` to assert.
+ * @returns A Promise that resolves when both assertions pass.
+ */
+
 export async function expectVisibleAndEnabled(locator: Locator): Promise<void> {
   await Promise.all([expect(locator).toBeVisible(), expect(locator).toBeEnabled()]);
 }
+
+/**
+ * Creates a utility wrapper around a Playwright `Locator` to simplify common UI interactions.
+ * Before performing any action (e.g., `click`, `fill`, `check`), it implicitly
+ * **validates that the locator is visible and enabled**. This reduces boilerplate code
+ * and makes tests more robust by ensuring elements are interactive before attempting an action.
+ *
+ * @param locator The Playwright `Locator` to wrap with validation and performance methods.
+ * @returns An object containing methods for various UI interactions, each pre-validated
+ * for visibility and enabled state.
+ */
 
 export function validateAndPerform(locator: Locator) {
   async function expectVisibleAndEnabled(loc: Locator): Promise<void> {
@@ -177,7 +222,7 @@ export async function verifyValidationErrors(
 
 /**
  * Provides a consolidated set of navigation actions for the application.
- * This helper initializes necessary Page Object Models and exposes methods
+ * This helper initialises necessary Page Object Models and exposes methods
  * to click navigation links and assert their outcomes.
  *
  * @param page The Playwright Page object.

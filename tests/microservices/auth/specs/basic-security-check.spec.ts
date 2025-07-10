@@ -1,12 +1,12 @@
-import { test, expect } from '@playwright/test';
-import { AuthApiClient } from '../../../common/utils/types';
-import { AdminCredentials, BASE_API_URL, BookingEndpoints } from '../../../common/utils/constants';
-
 /**
  * @file This file contains non-functional (security) tests for the Login API endpoint.
  * It verifies the API's behavior with invalid, missing, and empty credentials
- * to ensure proper error handling and prevent unauthorized access.
+ * to ensure proper error handling and prevent unauthorised access.
  */
+
+import { test, expect } from '@playwright/test';
+import { AuthApiClient } from '../../../common/utils/types';
+import { AdminCredentials, BASE_API_URL, BookingEndpoints } from '../../../common/utils/constants';
 
 test.describe('Login API Security Tests', () => {
   test('should prevent login with invalid password', async ({ request }) => {

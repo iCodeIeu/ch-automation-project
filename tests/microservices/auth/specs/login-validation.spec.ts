@@ -1,3 +1,10 @@
+/**
+ * @file This file contains Playwright tests for the admin login functionality,
+ * covering various scenarios including valid and invalid credential submissions,
+ * as well as empty field submissions.
+ * It leverages shared helpers for navigation, form validation, and assertion.
+ */
+
 import { testWithOptionalReservation, expect } from '../../../common/fixtures/page-fixture';
 import { createNavigationActions, validateAndPerform, verifyValidationErrors } from '../../../common/utils/shared-helpers';
 import { AdminCredentials, ADMIN_INVALID_CREDENTIALS_ERROR } from '../../../common/utils/constants';

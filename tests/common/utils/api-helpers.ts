@@ -1,3 +1,12 @@
+/**
+ * @file This file provides a comprehensive API client for interacting with a booking service.
+ * It includes a `BookingAPI` class to handle authentication and direct booking operations
+ * (retrieval and deletion), as well as utility functions (`findBookingIdByGuestDetails` and
+ * `cleanupBooking`) to facilitate finding and cleaning up specific test bookings.
+ * This ensures that automated tests can effectively manage test data by creating,
+ * verifying, and then removing bookings via the API.
+ */
+
 import { APIRequestContext, APIResponse, expect } from '@playwright/test';
 import { AuthResponse, Booking, GuestBookingDetails } from './types';
 import { AdminCredentials, BookingEndpoints, BASE_API_URL } from './constants';
@@ -118,21 +127,26 @@ export class BookingAPI {
 }
 
 /**
- * Utility function to find a booking ID based on guest details.
- * This is useful when the UI doesn't directly expose the booking ID after creation.
- * It now strictly relies on the roomid provided in guestDetails.
+ * Finds a specific booking ID from the API based on guest details and room ID.
  *
- * @param bookingApi An instance of BookingAPI.
- * @param guestDetails The details of the guest used to create the booking (e.g., firstname, lastname, dates).
- * @returns The booking ID as a string.
- * @throws Error if the booking is not found or if roomid is missing from guestDetails.
+ * This asynchronous function searches for a booking by matching the guest's first name,
+ * last name, check-in date, and check-out date within a specific room.
+ * It's crucial that `guestDetails.roomId` is populated before calling this function,
+ * as it's used to narrow down the API search and avoid extraneous calls.
+ *
+ * @param bookingApi An instance of the `BookingAPI` class used to interact with the booking service.
+ * @param guestDetails An object containing the guest's booking details, including
+ * `firstName`, `lastName`, `checkInDate`, `checkOutDate`, and crucially, `roomId`.
+ * @returns A Promise that resolves with the found booking ID (a string).
+ * @throws {Error} If `guestDetails.roomId` is not provided, if the API call to get bookings fails,
+ * or if the specific booking cannot be found within the results for the given room.
  */
+
 export async function findBookingIdByGuestDetails(bookingApi: BookingAPI, guestDetails: GuestBookingDetails): Promise<string> {
   console.log(
     `Attempting to find booking ID for guest: ${guestDetails.firstName} ${guestDetails.lastName} (${guestDetails.checkInDate} - ${guestDetails.checkOutDate})...`
   );
 
-  // Room ID is now expected to be reliably populated in guestDetails from UI selection
   if (!guestDetails.roomId) {
     throw new Error('GuestDetails must include a roomid to find the booking. Ensure it is populated after room selection in your test.');
   }
@@ -146,8 +160,6 @@ export async function findBookingIdByGuestDetails(bookingApi: BookingAPI, guestD
 
     const foundBooking = bookingsInRoom.find(
       booking =>
-        // IMPORTANT: Ensure these properties match the Booking interface (API response)
-        // and the GuestDetails interface (your fixture/input).
         booking.firstname === guestDetails.firstName &&
         booking.lastname === guestDetails.lastName &&
         booking.bookingdates.checkin === guestDetails.checkInDate &&
@@ -172,14 +184,24 @@ export async function findBookingIdByGuestDetails(bookingApi: BookingAPI, guestD
 }
 
 /**
- * Utility function to perform post-test cleanup. It logs in, validates the token,
- * finds the booking ID based on guest details, and then deletes that specific booking.
- * This function should be called in your test's `afterEach` or `afterAll` hook.
+ * Cleans up a specific booking by logging in, finding the booking ID, and then deleting it.
  *
- * @param requestContext The Playwright APIRequestContext instance.
- * @param guestDetails The details of the guest used to create the booking.
- * @returns A Promise that resolves when the cleanup is complete.
+ * This asynchronous function orchestrates the process of removing a previously
+ * created booking. It first authenticates with the booking API to obtain a token,
+ * then uses the provided guest details (including a crucial `roomId`) to locate
+ * the specific booking ID. Finally, it attempts to delete the identified booking.
+ * Detailed logs are provided for each step of the cleanup process, and errors
+ * are caught and logged, with the option to re-throw them if a test
+ * should fail due to cleanup issues.
+ *
+ * @param requestContext The Playwright `APIRequestContext` used for making API calls.
+ * @param guestDetails An object containing the guest's booking details, including
+ * `firstName`, `lastName`, `checkInDate`, `checkOutDate`, and `roomId`, which is
+ * essential for finding the booking.
+ * @returns A Promise that resolves once the cleanup process is attempted.
+ * @throws {Error} If authentication fails, the booking ID cannot be found, or the deletion fails.
  */
+
 export async function cleanupBooking(requestContext: APIRequestContext, guestDetails: GuestBookingDetails): Promise<void> {
   console.log(`\n--- Starting cleanup for guest: ${guestDetails.firstName} ${guestDetails.lastName} ---`);
   console.log(`Guest details received for cleanup: ${JSON.stringify(guestDetails)}`); // Log received guest details

@@ -76,7 +76,6 @@ export class RoomDetailsPage {
 
     // --- Extracting Number of Nights using split and direct parsing ---
     const extractedNightsPart = combinedText?.split('x')[1]; // This gives " 1 nights" (or similar, or undefined)
-    // Your concise line here:
     const displayedNights = extractedNightsPart ? Number(extractedNightsPart.match(/\d+/)?.[0]) : null;
 
     expect(displayedNights).not.toBeNull(); // Ensure digits were found and parsed
@@ -94,11 +93,22 @@ export class RoomDetailsPage {
   }
 
   /**
-   * Calculates the expected total price including fixed fees and asserts it against the displayed total.
-   * @param dailyRate The daily rate of the room (from selectedRoom, passed from HomePage).
-   * @param checkInDateStr The check-in date string.
-   * @param checkOutDateStr The check-out date string.
+   * Asserts the total price calculation displayed on the page against an expected value
+   * and then proceeds by clicking the "Reserve Now" button.
+   *
+   * This asynchronous method calculates the expected total price based on the daily rate,
+   * the number of nights between the check-in and check-out dates, and predefined
+   * cleaning and service fees. It then retrieves the displayed total price from the UI,
+   * asserts that it matches the expected calculation, and finally clicks the
+   * "Reserve Now" button to proceed with the reservation.
+   *
+   * @param dailyRate The daily rate of the room.
+   * @param checkInDateStr The check-in date in 'YYYY-MM-DD' format.
+   * @param checkOutDateStr The check-out date in 'YYYY-MM-DD' format.
+   * @returns A Promise that resolves once the assertion is complete and the
+   * "Reserve Now" button has been clicked.
    */
+
   async assertTotalPriceCalculationAndProceed(dailyRate: number, checkInDateStr: string, checkOutDateStr: string): Promise<void> {
     const expectedNights = calculateNumberOfNights(checkInDateStr, checkOutDateStr);
 
@@ -122,6 +132,19 @@ export class RoomDetailsPage {
 
     await validateAndPerform(this.reserveNowButton).click();
   }
+
+  /**
+   * Fills in the guest booking details form and proceeds with the reservation.
+   *
+   * This asynchronous method takes a partial `GuestBookingDetails` object,
+   * allowing for flexible input of guest information. It fills the first name,
+   * last name, email, and phone number fields, using empty strings as fallbacks
+   * for any missing details. Finally, it clicks the "Reserve Now" button to
+   * submit the booking information.
+   *
+   * @param details A `Partial<GuestBookingDetails>` object containing the guest's booking information.
+   * Expected properties include `firstName`, `lastName`, `email`, and `phone`.
+   */
 
   async fillGuestBookingDetailsAndProceed(details: Partial<GuestBookingDetails>): Promise<void> {
     await validateAndPerform(this.firstNameInput).fill(details.firstName || '');

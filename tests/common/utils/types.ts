@@ -1,3 +1,9 @@
+/**
+ * @file This file declares the TypeScript interfaces and types used across the test automation framework.
+ * These definitions ensure type safety and provide clear structures for data
+ * related to room selections, guest booking information, contact enquiries, and API responses from the booking service.
+ */
+
 import { Locator, APIRequestContext } from '@playwright/test';
 
 export interface SelectedRoomDetails {
@@ -35,10 +41,6 @@ export type AuthResponse = {
   token: string;
 };
 
-/**
- * Represents the API client for authentication.
- * This class encapsulates the login logic for testing purposes.
- */
 export class AuthApiClient {
   private requestContext: APIRequestContext;
   public authToken: string | undefined;

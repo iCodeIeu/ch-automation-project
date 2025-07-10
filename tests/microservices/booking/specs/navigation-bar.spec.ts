@@ -1,3 +1,9 @@
+/**
+ * @file This file contains Playwright tests for validating the functionality of the navigation bar
+ * across different sections of the application. It ensures that clicking each navigation link
+ * directs the user to the correct page or section.
+ */
+
 import { testWithOptionalReservation } from '../../../common/fixtures/page-fixture';
 import { createNavigationActions } from '../../../common/utils/shared-helpers';
 

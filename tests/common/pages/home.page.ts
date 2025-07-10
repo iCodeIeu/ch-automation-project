@@ -72,6 +72,18 @@ export class HomePage {
     await Promise.all([await expect(this.pageTitle).toBeVisible(), await expectVisibleAndEnabled(this.primaryBookNowButton)]);
   }
 
+  /**
+   * Formats a date string into a more readable format for a date picker.
+   *
+   * This function takes a date string in 'YYYY-MM-DD' format and converts it into
+   * a human-readable string like "Weekday, Day MonthName" (e.g., "Monday, 7 July").
+   * It uses `Date.UTC` to prevent timezone issues from affecting the day, especially
+   * during the calculation of the weekday.
+   *
+   * @param dateString The date string to format, in 'YYYY-MM-DD' format.
+   * @returns The formatted date string (e.g., "Monday, 7 July").
+   */
+
   private formatDateForDatePicker(dateString: string): string {
     const [year, month, day] = dateString.split('-').map(Number);
     // Use Date.UTC to prevent timezone issues shifting the day, especially for 'weekday' calculation
@@ -111,6 +123,20 @@ export class HomePage {
     }
   }
 
+  /**
+   * Enters the check-in and check-out dates into the date picker and submits the form.
+   *
+   * This asynchronous function automates the process of selecting check-in and check-out dates
+   * within a date picker component and then clicking the "Check Availability" button.
+   * It formats the provided date strings for display in the date picker,
+   * interacts with the UI elements to select the dates, and includes
+   * waits to ensure the date picker modal is visible and hidden at appropriate times.
+   *
+   * @param page The Playwright `Page` object to interact with the browser.
+   * @param checkInDate The desired check-in date in 'YYYY-MM-DD' format.
+   * @param checkOutDate The desired check-out date in 'YYYY-MM-DD' format.
+   */
+
   async enterCheckInCheckOutDatesAndSubmit(page, checkInDate: string, checkOutDate: string): Promise<void> {
     const formattedCheckInDate = this.formatDateForDatePicker(checkInDate);
     const formattedCheckOutDate = this.formatDateForDatePicker(checkOutDate);
@@ -129,11 +155,34 @@ export class HomePage {
     await validateAndPerform(this.checkAvailabilityButton).click();
   }
 
+  /**
+   * Retrieves the numerical room rate value from a specific room card.
+   *
+   * This asynchronous function locates a room rate element by its index,
+   * asserts its visibility, and then extracts and returns only the digit
+   * characters from its text content. This is useful for obtaining the
+   * monetary value without currency symbols or other text.
+   *
+   * @param index The zero-based index of the room card's rate to retrieve.
+   * @returns A Promise that resolves to the numerical room rate, or `null` if no digits are found.
+   */
+
   async getRoomRateValue(index: number): Promise<number | null> {
     const roomRate = this.roomCardRate.nth(index);
     await expect(roomRate).toBeVisible();
     return await getDigits(roomRate);
   }
+
+  /**
+   * Retrieves the Playwright `Locator` for the "Book Room" button of a specific room card.
+   *
+   * This asynchronous function locates the "Book Room" button based on its index
+   * among the room cards. It also asserts that the button is both visible and enabled
+   * before returning its `Locator`, ensuring it's ready for interaction.
+   *
+   * @param index The zero-based index of the room card's "Book Room" button to retrieve.
+   * @returns A Promise that resolves to the Playwright `Locator` for the specified button.
+   */
 
   async getRoomBookButtonLocator(index: number): Promise<Locator> {
     const bookRoomButton = this.roomCardBookButton.nth(index);
@@ -162,15 +211,10 @@ export class HomePage {
       const price = await this.getRoomRateValue(i);
       const bookNowButton = await this.getRoomBookButtonLocator(i);
 
-      // roomId is no longer extracted here, it will be extracted on the reservation page.
-      // We can initialize it as undefined or null here, or simply omit it from the push
-      // if the interface allowed it. For consistency with SelectedRoomDetails, we'll keep it,
-      // but it won't be used for finding the booking at this stage.
-      const roomId: string | undefined = undefined; // Explicitly set to undefined
+      const roomId: string | undefined = undefined;
 
       if (price !== null) {
-        // Only check for price, as roomId is not reliably available here
-        rooms.push({ type, price, bookNowButton: bookNowButton, roomId: roomId }); // roomId will be undefined here
+        rooms.push({ type, price, bookNowButton: bookNowButton, roomId: roomId });
       } else {
         console.warn(`Room "${type}" does not have a visible price or 'BOOK NOW' button. This room will be skipped for selection.`);
       }
@@ -183,32 +227,39 @@ export class HomePage {
   }
 
   /**
-   * Selects a random room option from the available choices, clicks its "BOOK NOW" button,
-   * and returns the type, price, and roomId of the selected room.
-   * This method now reliably extracts the roomId from the URL of the room details page.
+   * Selects a random available room option and attempts to book it.
+   *
+   * This asynchronous method first retrieves details of all available room options.
+   * It then randomly selects one of these rooms, clicks its "Book Now" button,
+   * waits for the page to navigate and load, and extracts the `roomId` from the
+   * resulting reservation URL. If the `roomId` cannot be extracted, an error is thrown.
+   * Finally, it returns an object containing the details of the selected room,
+   * including its type, price, and the extracted `roomId`.
+   *
+   * @returns A Promise that resolves to a `SelectedRoomDetails` object
+   * containing the type, price, and `roomId` of the randomly selected and booked room.
+   * @throws {Error} If the room ID cannot be extracted from the reservation URL after booking.
    */
+
   async selectRandomRoomOption(): Promise<SelectedRoomDetails> {
     const availableRooms = await this.getAllRoomOptionInternalDetails();
     const randomIndex = Math.floor(Math.random() * availableRooms.length);
-    const selectedRoom = availableRooms[randomIndex]; // selectedRoom.roomId will be undefined here
+    const selectedRoom = availableRooms[randomIndex];
 
     await selectedRoom.bookNowButton.waitFor({ state: 'visible', timeout: 10000 });
     await selectedRoom.bookNowButton.scrollIntoViewIfNeeded();
-    await validateAndPerform(selectedRoom.bookNowButton).click(); // Using direct click for simplicity, adjust if you have validateAndPerform
+    await validateAndPerform(selectedRoom.bookNowButton).click();
     await this.page.waitForLoadState('domcontentloaded');
     const currentUrl = this.page.url();
-    console.log(`Current URL after clicking Book Now: ${currentUrl}`); // Added log for URL
-    // Regex to capture ID from /reservation/{id}
+    console.log(`Current URL after clicking Book Now: ${currentUrl}`);
     const urlMatch = currentUrl.match(/\/reservation\/(\d+)/);
-    console.log(`URL Match result: ${JSON.stringify(urlMatch)}`); // Added log for regex match result
+    console.log(`URL Match result: ${JSON.stringify(urlMatch)}`);
     let actualRoomId: string;
 
     if (urlMatch && urlMatch[1]) {
       actualRoomId = urlMatch[1];
       console.log(`Successfully extracted actual Room ID from URL: ${actualRoomId}`);
     } else {
-      // If URL pattern is unexpected, this indicates a serious issue with navigation or URL structure.
-      // We should throw an error here, as we rely on this for cleanup.
       throw new Error(`Could not extract Room ID from reservation URL: ${currentUrl}. Expected pattern /reservation/{id}.`);
     }
 
@@ -216,6 +267,19 @@ export class HomePage {
 
     return { type: selectedRoom.type, price: selectedRoom.price, roomId: Number(actualRoomId) };
   }
+
+  /**
+   * Fills out the enquiry form with the provided details and submits it.
+   *
+   * This asynchronous method takes a partial `EnquiryDetails` object,
+   * which allows for flexibility in providing only the necessary fields.
+   * It scrolls the name input into view, fills each input field (name, email, phone, subject, message)
+   * with the corresponding data, and then clicks the "Submit Enquiry" button.
+   * Empty strings are used as fallback values for any missing details to avoid errors.
+   *
+   * @param details A `Partial<EnquiryDetails>` object containing the enquiry information.
+   * Expected properties include `name`, `email`, `phone`, `subject`, and `message`.
+   */
 
   async fillEnquiryDetailsAndSubmit(details: Partial<EnquiryDetails>): Promise<void> {
     await this.nameInput.scrollIntoViewIfNeeded();
