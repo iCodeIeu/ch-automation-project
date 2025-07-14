@@ -37,6 +37,10 @@ npm install
 
 Playwright will automatically download the required browser binaries (Chromium, Firefox, and WebKit) during the installation process.
 
+npx playwright install
+
+If the tests fail to run due to missing browsers, or if you are prompted, you may need to explicitly install the Playwright browsers:
+
 ### ▶️ Running Tests
 
 All tests are run using the Playwright Test Runner.
